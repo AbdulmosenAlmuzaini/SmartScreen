@@ -146,6 +146,11 @@
                     {{ __('Administrator') }}
                 </span>
             </div>
+
+            <a href="{{ route('profile.edit') }}" class="glass-card hover:bg-purple-500/10 px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-purple-400 flex items-center gap-2 transition duration-200">
+                <i data-lucide="user-cog" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">{{ __('Profile Settings') }}</span>
+            </a>
             
             <form action="{{ route('logout') }}" method="POST" class="inline">
                 @csrf
@@ -170,20 +175,24 @@
                         <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                         <span class="font-medium">{{ __('Overview') }}</span>
                     </a>
+                    <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl transition duration-200 {{ Route::is('profile.edit') ? 'bg-gradient-to-r from-purple-500/15 to-blue-500/5 text-purple-400 border border-purple-500/10' : 'text-gray-400 hover:text-gray-200 hover:bg-white/5' }}">
+                        <i data-lucide="user-cog" class="w-5 h-5"></i>
+                        <span class="font-medium">{{ __('Profile Settings') }}</span>
+                    </a>
                 </nav>
             </div>
             
-            <!-- Server Time Indicator -->
+            <!-- Local Time Indicator -->
             <div class="glass-panel p-4 rounded-2xl border border-white/5 bg-slate-900/40">
                 <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
                     <i data-lucide="clock" class="w-3.5 h-3.5 text-purple-400 rtl:mr-0 rtl:ml-1"></i>
-                    <span>{{ __('Server Time (Timezone)') }}</span>
+                    <span>{{ __('Local Time') }}</span>
                 </div>
-                <div id="server-clock" class="text-lg font-bold font-mono tracking-wider text-purple-200">
-                    {{ now()->format('H:i:s') }}
+                <div id="local-clock" class="text-lg font-bold font-mono tracking-wider text-purple-200">
+                    --:--:--
                 </div>
-                <div class="text-[10px] text-gray-500 mt-1">
-                    {{ now()->format('Y-m-d') }}
+                <div id="local-date" class="text-[10px] text-gray-500 mt-1">
+                    -----
                 </div>
             </div>
         </aside>
@@ -238,17 +247,26 @@
     <script>
         lucide.createIcons();
 
-        // Live clock sync with server start time
-        const clockEl = document.getElementById('server-clock');
+        // Live clock sync with local browser clock
+        const clockEl = document.getElementById('local-clock');
+        const dateEl = document.getElementById('local-date');
         if (clockEl) {
-            let serverTime = new Date("{{ now()->format('Y-m-d\TH:i:s') }}");
-            setInterval(() => {
-                serverTime.setSeconds(serverTime.getSeconds() + 1);
-                const hrs = String(serverTime.getHours()).padStart(2, '0');
-                const mins = String(serverTime.getMinutes()).padStart(2, '0');
-                const secs = String(serverTime.getSeconds()).padStart(2, '0');
+            const updateClock = () => {
+                const now = new Date();
+                const hrs = String(now.getHours()).padStart(2, '0');
+                const mins = String(now.getMinutes()).padStart(2, '0');
+                const secs = String(now.getSeconds()).padStart(2, '0');
                 clockEl.textContent = `${hrs}:${mins}:${secs}`;
-            }, 1000);
+                
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                if (dateEl) {
+                    dateEl.textContent = `${year}-${month}-${day}`;
+                }
+            };
+            updateClock();
+            setInterval(updateClock, 1000);
         }
 
         // Custom Confirm Modal Helpers
