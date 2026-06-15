@@ -117,6 +117,11 @@
                     <i data-lucide="arrow-right" class="w-4 h-4 rtl:rotate-180"></i>
                 </button>
             </form>
+
+            <div class="mt-6 text-center text-xs text-gray-400">
+                {{ __("Don't have an account?") }}
+                <a href="{{ route('register') }}" class="text-purple-400 hover:text-purple-300 font-medium underline underline-offset-4 ml-1">{{ __('Register Here') }}</a>
+            </div>
         </div>
 
         <!-- Language Switcher below Card -->
