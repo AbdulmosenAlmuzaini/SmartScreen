@@ -112,7 +112,7 @@
                                 <form id="delete-screen-form-{{ $screen->id }}" action="{{ route('screens.destroy', $screen->id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="triggerConfirm('{{ __('Delete Screen') }}', '{{ __('Are you sure you want to delete the screen ":name" and all its uploaded slides? This cannot be undone.', ['name' => $screen->name]) }}', document.getElementById('delete-screen-form-{{ $screen->id }}'))" 
+                                    <button type="button" onclick="triggerConfirm('{{ __('Delete Screen') }}', '{{ __('Are you sure you want to delete the screen (:name) and all its uploaded slides? This cannot be undone.', ['name' => $screen->name]) }}', document.getElementById('delete-screen-form-{{ $screen->id }}'))" 
                                             class="glass-panel hover:bg-red-500/10 text-gray-500 hover:text-red-400 p-2 rounded-xl border border-white/5 transition duration-200" title="{{ __('Delete Screen') }}">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
