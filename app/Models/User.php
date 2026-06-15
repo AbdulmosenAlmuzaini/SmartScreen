@@ -29,4 +29,12 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the screens for the user.
+     */
+    public function screens(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Screen::class);
+    }
 }

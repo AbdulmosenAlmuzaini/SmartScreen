@@ -118,7 +118,7 @@
             </div>
             <div>
                 <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">SmartScreen</h1>
-                <p class="text-xs text-gray-500">{{ __('No-JS Digital Signage Platform') }}</p>
+                <p class="text-xs text-gray-500">{{ __('Digital Signage Platform') }}</p>
             </div>
         </div>
 

@@ -15,11 +15,14 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $screensCount = Screen::count();
-        $slidesCount = Slide::count();
-        $activeSlidesCount = Slide::where('is_active', true)->count();
+        $user = auth()->user();
+        $screensCount = $user->screens()->count();
         
-        $screens = Screen::withCount('slides')->get();
+        $screenIds = $user->screens()->pluck('id');
+        $slidesCount = Slide::whereIn('screen_id', $screenIds)->count();
+        $activeSlidesCount = Slide::whereIn('screen_id', $screenIds)->where('is_active', true)->count();
+        
+        $screens = $user->screens()->withCount('slides')->get();
 
         return view('dashboard.index', compact(
             'screensCount',
@@ -47,7 +50,7 @@ class DashboardController extends Controller
             $slug = $slug . '-' . time();
         }
 
-        Screen::create([
+        auth()->user()->screens()->create([
             'name' => $validated['name'],
             'slug' => $slug,
             'description' => $validated['description'],
@@ -61,6 +64,10 @@ class DashboardController extends Controller
      */
     public function screenDestroy(Screen $screen)
     {
+        if ($screen->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         // Delete all slide images from disk
         foreach ($screen->slides as $slide) {
             Storage::disk('public')->delete($slide->image_path);
@@ -76,6 +83,10 @@ class DashboardController extends Controller
      */
     public function slidesIndex(Screen $screen)
     {
+        if ($screen->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         $slides = $screen->slides()->orderBy('sort_order')->orderBy('id')->get();
         return view('dashboard.slides', compact('screen', 'slides'));
     }
@@ -85,8 +96,12 @@ class DashboardController extends Controller
      */
     public function slideStore(Request $request, Screen $screen)
     {
+        if ($screen->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         $request->validate([
-            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:10240'], // 10MB max
+            'image' => ['required', 'file', 'mimes:jpeg,png,jpg,gif,webp,mp4,webm,ogg,avi,mov', 'max:102400'], // 100MB max
             'caption' => ['nullable', 'string', 'max:255'],
             'duration' => ['required', 'integer', 'min:1'],
             'start_time' => ['nullable', 'date_format:H:i'],
@@ -119,6 +134,10 @@ class DashboardController extends Controller
      */
     public function slideUpdate(Request $request, Slide $slide)
     {
+        if ($slide->screen->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         $request->validate([
             'caption' => ['nullable', 'string', 'max:255'],
             'duration' => ['required', 'integer', 'min:1'],
@@ -156,6 +175,10 @@ class DashboardController extends Controller
      */
     public function slideDestroy(Slide $slide)
     {
+        if ($slide->screen->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         $screenId = $slide->screen_id;
         
         // Delete image from disk
@@ -173,6 +196,10 @@ class DashboardController extends Controller
      */
     public function slideReorder(Request $request, Screen $screen)
     {
+        if ($screen->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         $request->validate([
             'order' => ['required', 'array'],
             'order.*' => ['integer', 'exists:slides,id'],

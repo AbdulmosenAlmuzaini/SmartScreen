@@ -82,16 +82,17 @@
                     
                     <!-- File input -->
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{{ __('Image File') }}</label>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{{ __('Image or Video File') }}</label>
                         <div class="relative border border-white/5 hover:border-purple-500/30 rounded-xl p-4 bg-slate-900/40 text-center cursor-pointer transition">
                             <input type="file" name="image" id="image" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="previewUploadImage(this)">
                             <div class="space-y-1">
                                 <i data-lucide="upload-cloud" class="w-8 h-8 text-purple-400 mx-auto"></i>
-                                <p class="text-xs font-medium text-gray-300" id="upload-placeholder">{{ __('Choose image or drag here') }}</p>
-                                <p class="text-[10px] text-gray-500 font-light">{{ __('JPG, PNG, GIF, WEBP up to 10MB') }}</p>
+                                <p class="text-xs font-medium text-gray-300" id="upload-placeholder">{{ __('Choose image/video or drag here') }}</p>
+                                <p class="text-[10px] text-gray-500 font-light">{{ __('Images or Videos up to 100MB') }}</p>
                             </div>
-                            <!-- Image preview container -->
+                            <!-- Image/Video preview containers -->
                             <img id="upload-preview" class="hidden mt-3 max-h-36 mx-auto rounded-lg object-contain border border-white/5" />
+                            <video id="upload-preview-video" class="hidden mt-3 max-h-36 mx-auto rounded-lg object-contain border border-white/5" muted playsinline autoplay></video>
                         </div>
                     </div>
 
@@ -165,9 +166,20 @@
                                 <i data-lucide="grip-vertical" class="w-5 h-5"></i>
                             </div>
 
-                            <!-- Slide image thumbnail -->
+                            <!-- Slide thumbnail -->
                             <div class="w-20 h-28 rounded-xl overflow-hidden shrink-0 border border-white/5 bg-slate-900/40 relative font-sans">
-                                <img src="{{ asset('storage/' . $slide->image_path) }}" alt="{{ $slide->caption }}" class="w-full h-full object-cover">
+                                @php
+                                    $ext = pathinfo($slide->image_path, PATHINFO_EXTENSION);
+                                    $isVideo = in_array(strtolower($ext), ['mp4', 'webm', 'ogg', 'avi', 'mov']);
+                                @endphp
+                                @if($isVideo)
+                                    <video src="{{ asset('storage/' . $slide->image_path) }}" class="w-full h-full object-cover" muted playsinline></video>
+                                    <span class="absolute top-1 right-1 p-1 bg-black/60 rounded-full text-white">
+                                        <i data-lucide="video" class="w-3.5 h-3.5"></i>
+                                    </span>
+                                @else
+                                    <img src="{{ asset('storage/' . $slide->image_path) }}" alt="{{ $slide->caption }}" class="w-full h-full object-cover">
+                                @endif
                                 <span class="absolute bottom-1 left-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-950/70 text-gray-300" dir="ltr">
                                     #{{ $slide->sort_order }}
                                 </span>
@@ -286,23 +298,34 @@
 <script>
     // File upload preview
     function previewUploadImage(input) {
-        const preview = document.getElementById('upload-preview');
+        const previewImg = document.getElementById('upload-preview');
+        const previewVid = document.getElementById('upload-preview-video');
         const placeholder = document.getElementById('upload-placeholder');
         
         if (input.files && input.files[0]) {
+            const file = input.files[0];
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.classList.remove('hidden');
-                placeholder.textContent = input.files[0].name;
+                placeholder.textContent = file.name;
+                if (file.type.startsWith('video/')) {
+                    previewImg.classList.add('hidden');
+                    previewVid.src = e.target.result;
+                    previewVid.classList.remove('hidden');
+                } else {
+                    previewVid.classList.add('hidden');
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('hidden');
+                }
             }
             
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
         } else {
-            preview.src = '';
-            preview.classList.add('hidden');
-            placeholder.textContent = 'Choose image or drag here';
+            previewImg.src = '';
+            previewImg.classList.add('hidden');
+            previewVid.src = '';
+            previewVid.classList.add('hidden');
+            placeholder.textContent = 'Choose image/video or drag here';
         }
     }
 

@@ -8,7 +8,13 @@
     <title>{{ $screen->name }} - SmartScreen</title>
     
     <!-- Preload next slide image to cache it in browser for instant display on reload -->
-    <link rel="preload" as="image" href="{{ asset('storage/' . $nextSlide->image_path) }}">
+    @php
+        $nextExt = pathinfo($nextSlide->image_path, PATHINFO_EXTENSION);
+        $nextIsVideo = in_array(strtolower($nextExt), ['mp4', 'webm', 'ogg', 'avi', 'mov']);
+    @endphp
+    @if(!$nextIsVideo)
+        <link rel="preload" as="image" href="{{ asset('storage/' . $nextSlide->image_path) }}">
+    @endif
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -121,8 +127,16 @@
 <body>
 
     <div class="viewport">
-        <!-- Display current slide image -->
-        <img src="{{ asset('storage/' . $currentSlide->image_path) }}" alt="{{ $currentSlide->caption }}" class="slide-img">
+        <!-- Display current slide (Image or Video) -->
+        @php
+            $ext = pathinfo($currentSlide->image_path, PATHINFO_EXTENSION);
+            $isVideo = in_array(strtolower($ext), ['mp4', 'webm', 'ogg', 'avi', 'mov']);
+        @endphp
+        @if($isVideo)
+            <video src="{{ asset('storage/' . $currentSlide->image_path) }}" class="slide-img" autoplay muted playsinline loop></video>
+        @else
+            <img src="{{ asset('storage/' . $currentSlide->image_path) }}" alt="{{ $currentSlide->caption }}" class="slide-img">
+        @endif
 
         <!-- Display Screen Badge -->
         <div class="screen-badge">
