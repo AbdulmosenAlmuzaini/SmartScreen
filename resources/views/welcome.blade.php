@@ -459,11 +459,25 @@
                 <span class="text-sm font-bold text-gray-200">SmartScreen</span>
             </div>
             
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+                <a href="https://wa.me/966555252341" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-400 flex items-center gap-1.5 transition">
+                    <i data-lucide="message-circle" class="w-4 h-4 text-emerald-500"></i>
+                    <span>{{ app()->getLocale() == 'ar' ? 'تواصل معنا عبر الواتساب' : 'Contact us on WhatsApp' }}</span>
+                </a>
+            </div>
+            
             <p class="text-xs text-gray-500 font-light">
                 &copy; 2026 SmartScreen. {{ __('All rights reserved.') }}
             </p>
         </div>
     </footer>
+
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/966555252341" target="_blank" rel="noopener noreferrer" 
+       class="fixed bottom-6 right-6 z-[99] w-14 h-14 bg-emerald-500 hover:bg-emerald-400 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-110 transition duration-300 group"
+       title="Contact us on WhatsApp / تواصل معنا عبر الواتساب">
+        <i data-lucide="message-circle" class="w-7 h-7 group-hover:rotate-12 transition duration-300"></i>
+    </a>
 
     <script>
         lucide.createIcons();

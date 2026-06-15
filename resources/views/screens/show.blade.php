@@ -2,16 +2,22 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
-    <!-- Meta refresh to trigger full page redirect after current slide duration -->
-    <meta http-equiv="refresh" content="{{ $currentSlide->duration }}; url={{ $nextUrl }}">
+    @php
+        $ext = pathinfo($currentSlide->image_path, PATHINFO_EXTENSION);
+        $isVideo = in_array(strtolower($ext), ['mp4', 'webm', 'ogg', 'avi', 'mov']);
+
+        $nextExt = pathinfo($nextSlide->image_path, PATHINFO_EXTENSION);
+        $nextIsVideo = in_array(strtolower($nextExt), ['mp4', 'webm', 'ogg', 'avi', 'mov']);
+    @endphp
+
+    @if(!$isVideo)
+        <!-- Meta refresh to trigger full page redirect after current slide duration -->
+        <meta http-equiv="refresh" content="{{ $currentSlide->duration }}; url={{ $nextUrl }}">
+    @endif
     
     <title>{{ $screen->name }} - SmartScreen</title>
     
     <!-- Preload next slide image to cache it in browser for instant display on reload -->
-    @php
-        $nextExt = pathinfo($nextSlide->image_path, PATHINFO_EXTENSION);
-        $nextIsVideo = in_array(strtolower($nextExt), ['mp4', 'webm', 'ogg', 'avi', 'mov']);
-    @endphp
     @if(!$nextIsVideo)
         <link rel="preload" as="image" href="{{ asset('storage/' . $nextSlide->image_path) }}">
     @endif
@@ -128,12 +134,8 @@
 
     <div class="viewport">
         <!-- Display current slide (Image or Video) -->
-        @php
-            $ext = pathinfo($currentSlide->image_path, PATHINFO_EXTENSION);
-            $isVideo = in_array(strtolower($ext), ['mp4', 'webm', 'ogg', 'avi', 'mov']);
-        @endphp
         @if($isVideo)
-            <video src="{{ asset('storage/' . $currentSlide->image_path) }}" class="slide-img" autoplay muted playsinline loop></video>
+            <video src="{{ asset('storage/' . $currentSlide->image_path) }}" class="slide-img" autoplay muted playsinline></video>
         @else
             <img src="{{ asset('storage/' . $currentSlide->image_path) }}" alt="{{ $currentSlide->caption }}" class="slide-img">
         @endif
@@ -150,6 +152,26 @@
             </div>
         @endif
     </div>
+
+    @if($isVideo)
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.querySelector('video.slide-img');
+            if (video) {
+                // When video ends, redirect to next slide
+                video.addEventListener('ended', function() {
+                    window.location.href = "{{ $nextUrl }}";
+                });
+                
+                // Fallback: redirect after max of 5 minutes or configured duration if video freezes
+                const fallbackDuration = {{ max($currentSlide->duration, 300) }} * 1000;
+                setTimeout(function() {
+                    window.location.href = "{{ $nextUrl }}";
+                }, fallbackDuration);
+            }
+        });
+    </script>
+    @endif
 
 </body>
 </html>
